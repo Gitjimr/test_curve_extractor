@@ -6,9 +6,11 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from sklearn.metrics import mean_squared_error
 import os
+import io
 
 path = os.path.dirname(__file__)
-my_file = path + '/images/mechub_logo.png'
+#my_file = path + '/images/mechub_logo.png'
+my_file = 'images/mechub_logo.png'
 img_logo = Image.open(my_file)
 
 st.set_page_config(
@@ -319,5 +321,6 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
