@@ -144,6 +144,59 @@ if uploaded:
     # Canvas sobre a imagem (devolve as pinceladas)
 
     with tab_edit:
+        
+        import base64
+        from io import BytesIO
+    
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    
+        w, h = img.size
+    
+        # ———————————
+        # 2) HTML + CSS: imagem real + canvas por cima
+        # ———————————
+        st.markdown(
+            f"""
+            <style>
+                .stack-container {{
+                    position: relative;
+                    width: {w}px;
+                    height: {h}px;
+                    margin-bottom: 20px;
+                }}
+                .bg-image {{
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: {w}px;
+                    height: {h}px;
+                    background-image: url('data:image/png;base64,{b64}');
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    z-index: 1;
+                }}
+                .canvas-overlay {{
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: {w}px;
+                    height: {h}px;
+                    z-index: 2;
+                    pointer-events: none; /* canvas vai ficar dentro dessa div */
+                }}
+            </style>
+    
+            <div class="stack-container">
+                <div class="bg-image"></div>
+                <div class="canvas-overlay" id="canvas-area"></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    
         canvas_result = st_canvas(
             fill_color="rgba(255, 0, 0, 0.0)",
             stroke_width=brush,
@@ -325,6 +378,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
