@@ -157,6 +157,8 @@ if uploaded:
         # ———————————
         # 2) HTML + CSS: imagem real + canvas por cima
         # ———————————
+        overlay = st.container()
+
         st.markdown(
             f"""
             <style>
@@ -164,7 +166,6 @@ if uploaded:
                     position: relative;
                     width: {w}px;
                     height: {h}px;
-                    margin-bottom: 20px;
                 }}
                 .bg-image {{
                     position: absolute;
@@ -185,30 +186,31 @@ if uploaded:
                     width: {w}px;
                     height: {h}px;
                     z-index: 2;
-                    pointer-events: none; /* canvas vai ficar dentro dessa div */
                 }}
             </style>
-    
+        
             <div class="stack-container">
                 <div class="bg-image"></div>
-                <div class="canvas-overlay" id="canvas-area"></div>
+                <div class="canvas-overlay"></div>
             </div>
             """,
             unsafe_allow_html=True,
         )
+        
+        with overlay:
     
-        canvas_result = st_canvas(
-            fill_color="rgba(255, 0, 0, 0.0)",
-            stroke_width=brush,
-            stroke_color="#FF0000",
-            background_image=img,
-            update_streamlit=True,
-            height=img.height,
-            width=img.width,
-            drawing_mode="freedraw",
-            #key="canvas",
-            key="canvas_overlay"
-        )
+            canvas_result = st_canvas(
+                fill_color="rgba(255, 0, 0, 0.0)",
+                stroke_width=brush,
+                stroke_color="#FF0000",
+                background_image=img,
+                update_streamlit=True,
+                height=img.height,
+                width=img.width,
+                drawing_mode="freedraw",
+                #key="canvas",
+                key="canvas_overlay"
+            )
 
     if canvas_result.image_data is not None:
         # máscara de onde houve traço (alpha > 0)
@@ -379,6 +381,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
