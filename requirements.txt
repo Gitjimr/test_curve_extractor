@@ -1,8 +1,7 @@
 matplotlib==3.10.7
-numpy==2.3.4
 opencv_python==4.12.0.88
-Pillow==12.0.0
 scikit_learn==1.7.2
 scipy==1.16.3
 streamlit==1.40.2
-streamlit_drawable_canvas==0.9.3
+git+https://github.com/SunOner/streamlit-drawable-canvas/tree/develop
+
