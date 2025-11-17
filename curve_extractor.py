@@ -147,15 +147,10 @@ if uploaded:
             key="canvas",
         )
         
-    
-    if canvas_result is not None and canvas_result.image_data is not None:
-        st.session_state["last_canvas_img"] = canvas_result.image_data
-    
     apply = tab_edit.button("Apply", use_container_width=True)
-    if apply:
-        img_ = st.session_state.get("last_canvas_img", None)
+    if apply and canvas_result is not None and canvas_result.image_data is not None:
         # máscara de onde houve traço (alpha > 0)
-        draw = (img_[...,3] > 0).astype(np.uint8)*255  # 0/255
+        draw = (canvas_result.image_data[...,3] > 0).astype(np.uint8)*255  # 0/255
         
         out = bg_img.copy()  # RGBA
         if mode=="Default":
@@ -321,6 +316,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
