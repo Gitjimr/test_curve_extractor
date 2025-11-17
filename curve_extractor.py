@@ -115,9 +115,6 @@ if uploaded:
     new_height = int(img.height * scaling_factor)
     img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-    #max_size = (800, 800)
-    #img = img.resize(max_size, Image.Resampling.LANCZOS)
-
     bg_img = np.array(img)  # RGBA
     rgb = bg_img[..., :3].copy()
 
@@ -125,12 +122,8 @@ if uploaded:
     if auto:
         bgcol = autodetect_bg(rgb)
     else:
-        # do colorpicker (#RRGGBB) para np.uint8
         bgcol = np.array([int(pick[i:i+2],16) for i in (1,3,5)], dtype=np.uint8)
 
-    #col1.write("Background color:", bgcol.tolist())
-
-    # X,Y Limits
     sidebar.divider()
     sidebar.subheader('Degree of The Polynomial')
     poly_dg = sidebar.number_input("> Degree of The Polynomial", value=4, label_visibility="hidden")
@@ -141,19 +134,7 @@ if uploaded:
     y_ini = cols2.number_input("Initial Y", value=0.)
     y_fim = cols2.number_input("Final Y", value=1.)
 
-    # Canvas sobre a imagem (devolve as pinceladas)
-
     with tab_edit:
-        
-        import base64
-        from io import BytesIO
-    
-        buf = BytesIO()
-        img.save(buf, format="PNG")
-        b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-    
-        w, h = img.size
-    
         canvas_result = st_canvas(
             fill_color="rgba(255, 0, 0, 0.0)",
             stroke_width=brush,
@@ -163,8 +144,7 @@ if uploaded:
             height=img.height,
             width=img.width,
             drawing_mode="freedraw",
-            #key="canvas",
-            key="canvas_overlay"
+            key="canvas",
         )
 
     if canvas_result.image_data is not None:
@@ -336,6 +316,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
