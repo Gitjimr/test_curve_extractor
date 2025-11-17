@@ -151,148 +151,147 @@ if uploaded:
     if apply and canvas_result is not None and canvas_result.image_data is not None:
         # máscara de onde houve traço (alpha > 0)
         draw = (canvas_result.image_data[...,3] > 0).astype(np.uint8)*255  # 0/255
+        
+        out = bg_img.copy()  # RGBA
+        if mode=="Default":
+            out[draw==255, 0] = bgcol[0]
+            out[draw==255, 1] = bgcol[1]
+            out[draw==255, 2] = bgcol[2]
+            # mantém alpha original
+        else:
+            # apagar para transparente
+            out[draw==255, 3] = 0
 
-        if tab_edit.button("Apply",use_container_width=True):
-            out = bg_img.copy()  # RGBA
-            if mode=="Default":
-                out[draw==255, 0] = bgcol[0]
-                out[draw==255, 1] = bgcol[1]
-                out[draw==255, 2] = bgcol[2]
-                # mantém alpha original
-            else:
-                # apagar para transparente
-                out[draw==255, 3] = 0
+        #col2.image(out, use_container_width=True)
+        # download
+        out_bgra = cv2.cvtColor(out, cv2.COLOR_RGBA2BGRA)
+        cv2.imwrite("result_img.png", out_bgra)
+        tab_edit.download_button("Donwload result_img.png", data=open("result_img.png","rb").read(), file_name="result_img.png",use_container_width=True)
 
-            #col2.image(out, use_container_width=True)
-            # download
-            out_bgra = cv2.cvtColor(out, cv2.COLOR_RGBA2BGRA)
-            cv2.imwrite("result_img.png", out_bgra)
-            tab_edit.download_button("Donwload result_img.png", data=open("result_img.png","rb").read(), file_name="result_img.png",use_container_width=True)
+        # Extrai os pontos
+        points = get_graph_curve_points("result_img.png")
 
-            # Extrai os pontos
-            points = get_graph_curve_points("result_img.png")
+        # Separa listas X e Y
+        xs = [p[0] for p in points]
+        ys = [p[1] for p in points]
 
-            # Separa listas X e Y
-            xs = [p[0] for p in points]
-            ys = [p[1] for p in points]
+        # Inverte Y (pois ficaria ao contrário)
 
-            # Inverte Y (pois ficaria ao contrário)
+        ys = np.max(ys) - ys
 
-            ys = np.max(ys) - ys
+        points = list(zip(xs, ys))
 
-            points = list(zip(xs, ys))
+        points = escalar_curva(points, x_fim, y_fim, x_ini, y_ini, False)
 
-            points = escalar_curva(points, x_fim, y_fim, x_ini, y_ini, False)
+        xs, ys = zip(*points)
 
-            xs, ys = zip(*points)
+        with tab_result:
+            col1, col2 = st.columns([1, 2])
 
-            with tab_result:
-                col1, col2 = st.columns([1, 2])
+        # Dados
+        x = np.array(xs)
+        y = np.array(ys)
 
-            # Dados
-            x = np.array(xs)
-            y = np.array(ys)
+        # Dicionário para armazenar modelos
+        modelos = {}
 
-            # Dicionário para armazenar modelos
-            modelos = {}
+        # Polinômios de grau 1 a 4
+        for grau in range(poly_dg-2, poly_dg+3):
+            coef = np.polyfit(x, y, grau)
+            p = np.poly1d(coef)
+            y_pred = p(x)
+            rmse = np.sqrt(mean_squared_error(y, y_pred))
+            modelos[f'Polynomial of degree {grau}'] = (p, y_pred, rmse)
 
-            # Polinômios de grau 1 a 4
-            for grau in range(poly_dg-2, poly_dg+3):
-                coef = np.polyfit(x, y, grau)
-                p = np.poly1d(coef)
-                y_pred = p(x)
-                rmse = np.sqrt(mean_squared_error(y, y_pred))
-                modelos[f'Polynomial of degree {grau}'] = (p, y_pred, rmse)
-
-                # Print da equação
-                #eq = f'Polynomial of degree {grau}:\ny = '
-                eq = ''
-                for i, c in enumerate(coef):
-                    pot = len(coef) - i - 1
-                    if pot == 0:
-                        # eq += f'({c:.6f})'
-                        eq += f'({c})'
-                    else:
-                        # eq += f'({c:.6f}) * x ** {pot} + '
-                        eq += f'({c}) * x ** {pot} + '
-                with col1.expander(f'Polynomial of degree {grau}'):
-                    st.write(eq)
-                    #col1.write(f"RMSE: {rmse:.6f}\n")
-
-
-            # grau = poly_dg
-            # coef = np.polyfit(x, y, grau)
-            # p = np.poly1d(coef)
-            # y_pred = p(x)
-            # rmse = np.sqrt(mean_squared_error(y, y_pred))
-            # modelos[f'Polinômio grau {grau}'] = (p, y_pred, rmse)
-            #
-            # # Print da equação
-            # #eq = f'Polinômio grau {grau}:\ny = '
-            # eq = ''
-            # for i, c in enumerate(coef):
-            #     pot = len(coef) - i - 1
-            #     if pot == 0:
-            #         #eq += f'({c:.6f})'
-            #         eq += f'({c})'
-            #     else:
-            #         #eq += f'({c:.6f}) * x ** {pot} + '
-            #         eq += f'({c}) * x ** {pot} + '
-            # with col1.expander(f'Polinômio grau {grau}'):
-            #     st.write(eq)
-            #     #col1.write(f"RMSE: {rmse:.6f}\n")
+            # Print da equação
+            #eq = f'Polynomial of degree {grau}:\ny = '
+            eq = ''
+            for i, c in enumerate(coef):
+                pot = len(coef) - i - 1
+                if pot == 0:
+                    # eq += f'({c:.6f})'
+                    eq += f'({c})'
+                else:
+                    # eq += f'({c:.6f}) * x ** {pot} + '
+                    eq += f'({c}) * x ** {pot} + '
+            with col1.expander(f'Polynomial of degree {grau}'):
+                st.write(eq)
+                #col1.write(f"RMSE: {rmse:.6f}\n")
 
 
-            # # Modelo exponencial: y = a * exp(bx)
-            # def modelo_exp(x, a, b):
-            #     return a * np.exp(b * x)
-            #
-            #
-            # try:
-            #     popt_exp, _ = curve_fit(modelo_exp, x, y, p0=(0.3, 0.001), maxfev=10000)
-            #     y_exp = modelo_exp(x, *popt_exp)
-            #     rmse_exp = np.sqrt(mean_squared_error(y, y_exp))
-            #     modelos['Exponencial'] = (lambda x: modelo_exp(x, *popt_exp), y_exp, rmse_exp)
-            #
-            #     # Print da equação
-            #     with col1.expander('Exponencial'):
-            #         st.write(f"{popt_exp[0]:.6f} * exp({popt_exp[1]:.6f} * x)")
-            #         #col1.write(f"RMSE: {rmse_exp:.6f}\n")
-            # except:
-            #     pass
+        # grau = poly_dg
+        # coef = np.polyfit(x, y, grau)
+        # p = np.poly1d(coef)
+        # y_pred = p(x)
+        # rmse = np.sqrt(mean_squared_error(y, y_pred))
+        # modelos[f'Polinômio grau {grau}'] = (p, y_pred, rmse)
+        #
+        # # Print da equação
+        # #eq = f'Polinômio grau {grau}:\ny = '
+        # eq = ''
+        # for i, c in enumerate(coef):
+        #     pot = len(coef) - i - 1
+        #     if pot == 0:
+        #         #eq += f'({c:.6f})'
+        #         eq += f'({c})'
+        #     else:
+        #         #eq += f'({c:.6f}) * x ** {pot} + '
+        #         eq += f'({c}) * x ** {pot} + '
+        # with col1.expander(f'Polinômio grau {grau}'):
+        #     st.write(eq)
+        #     #col1.write(f"RMSE: {rmse:.6f}\n")
 
 
-            # # Modelo logarítmico: y = a * log(x) + b
-            # def modelo_log(xx, a, b, c):
-            #     """Modelo: y = a * ln(x + c) + b  — robusto para x <= 0"""
-            #     return a * np.log(xx + c) + b
+        # # Modelo exponencial: y = a * exp(bx)
+        # def modelo_exp(x, a, b):
+        #     return a * np.exp(b * x)
+        #
+        #
+        # try:
+        #     popt_exp, _ = curve_fit(modelo_exp, x, y, p0=(0.3, 0.001), maxfev=10000)
+        #     y_exp = modelo_exp(x, *popt_exp)
+        #     rmse_exp = np.sqrt(mean_squared_error(y, y_exp))
+        #     modelos['Exponencial'] = (lambda x: modelo_exp(x, *popt_exp), y_exp, rmse_exp)
+        #
+        #     # Print da equação
+        #     with col1.expander('Exponencial'):
+        #         st.write(f"{popt_exp[0]:.6f} * exp({popt_exp[1]:.6f} * x)")
+        #         #col1.write(f"RMSE: {rmse_exp:.6f}\n")
+        # except:
+        #     pass
 
 
-            # Plotagem
-            fig = plt.figure(figsize=(10, 10))
-            x_fit = np.linspace(min(x), max(x), 200)
-            plt.scatter(x, y, label='Data', color='black')
+        # # Modelo logarítmico: y = a * log(x) + b
+        # def modelo_log(xx, a, b, c):
+        #     """Modelo: y = a * ln(x + c) + b  — robusto para x <= 0"""
+        #     return a * np.log(xx + c) + b
 
-            for nome, (func, y_model, erro) in modelos.items():
-                try:
-                    y_fit = func(x_fit)
-                    plt.plot(x_fit, y_fit, label=f'{nome} (RMSE={erro:.5f})')
-                except:
-                    continue
 
-            plt.xlabel("x")
-            plt.ylabel("y")
-            plt.grid(True)
-            plt.legend()
-            plt.tight_layout()
-            #plt.show()
-            with tab_result:
-                col2.pyplot(fig)
-                # Ranking por RMSE
-                col1.write("Ranking the functions by error (RMSE):")
-                ranking = sorted(modelos.items(), key=lambda x: x[1][2])
-                for nome, (_, __, erro) in ranking:
-                    col1.write(f"{nome}: RMSE = {erro:.6f}")
+        # Plotagem
+        fig = plt.figure(figsize=(10, 10))
+        x_fit = np.linspace(min(x), max(x), 200)
+        plt.scatter(x, y, label='Data', color='black')
+
+        for nome, (func, y_model, erro) in modelos.items():
+            try:
+                y_fit = func(x_fit)
+                plt.plot(x_fit, y_fit, label=f'{nome} (RMSE={erro:.5f})')
+            except:
+                continue
+
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        #plt.show()
+        with tab_result:
+            col2.pyplot(fig)
+            # Ranking por RMSE
+            col1.write("Ranking the functions by error (RMSE):")
+            ranking = sorted(modelos.items(), key=lambda x: x[1][2])
+            for nome, (_, __, erro) in ranking:
+                col1.write(f"{nome}: RMSE = {erro:.6f}")
 
 with tab_about:
     st.markdown('''
@@ -317,6 +316,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
