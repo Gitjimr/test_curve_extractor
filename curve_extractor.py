@@ -152,6 +152,7 @@ if uploaded:
         draw = (canvas_result.image_data[...,3] > 0).astype(np.uint8)*255  # 0/255
 
         if tab_edit.button("Apply",use_container_width=True):
+            draw = (canvas_result.image_data[...,3] > 0).astype(np.uint8)*255  # 0/255
             out = bg_img.copy()  # RGBA
             if mode=="Default":
                 out[draw==255, 0] = bgcol[0]
@@ -316,6 +317,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
