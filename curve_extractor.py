@@ -140,7 +140,7 @@ if uploaded:
             stroke_width=brush,
             stroke_color="#FF0000",
             background_image=img,
-            update_streamlit=False,
+            update_streamlit=True,
             height=img.height,
             width=img.width,
             drawing_mode="freedraw",
@@ -316,6 +316,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
