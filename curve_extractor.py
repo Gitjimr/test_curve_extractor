@@ -154,63 +154,18 @@ if uploaded:
     
         w, h = img.size
     
-        # ———————————
-        # 2) HTML + CSS: imagem real + canvas por cima
-        # ———————————
-        overlay = st.container()
-
-        st.markdown(
-            f"""
-            <style>
-                .stack-container {{
-                    position: relative;
-                    width: {w}px;
-                    height: {h}px;
-                }}
-                .bg-image {{
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    width: {w}px;
-                    height: {h}px;
-                    background-image: url('data:image/png;base64,{b64}');
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: center;
-                    z-index: 1;
-                }}
-                .canvas-overlay {{
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    width: {w}px;
-                    height: {h}px;
-                    z-index: 2;
-                }}
-            </style>
-        
-            <div class="stack-container">
-                <div class="bg-image"></div>
-                <div class="canvas-overlay"></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        canvas_result = st_canvas(
+            fill_color="rgba(255, 0, 0, 0.0)",
+            stroke_width=brush,
+            stroke_color="#FF0000",
+            background_image=img,
+            update_streamlit=True,
+            height=img.height,
+            width=img.width,
+            drawing_mode="freedraw",
+            #key="canvas",
+            key="canvas_overlay"
         )
-        
-        with overlay:
-    
-            canvas_result = st_canvas(
-                fill_color="rgba(255, 0, 0, 0.0)",
-                stroke_width=brush,
-                stroke_color="#FF0000",
-                background_image=img,
-                update_streamlit=True,
-                height=img.height,
-                width=img.width,
-                drawing_mode="freedraw",
-                #key="canvas",
-                key="canvas_overlay"
-            )
 
     if canvas_result.image_data is not None:
         # máscara de onde houve traço (alpha > 0)
@@ -381,6 +336,7 @@ with tab_about:
 st.sidebar.image(img_logo)
 st.sidebar.markdown(
     "[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@Mechub?sub_confirmation=1) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GitMechub)")
+
 
 
 
